@@ -1,0 +1,26 @@
+plugin.tx_femanagercheckout {
+	view {
+		templateRootPaths {
+			0 = EXT:femanager_checkout/Resources/Private/Templates/
+			1 = {$plugin.femanager_checkout.view.templateRootPath}
+		}
+		partialRootPaths {
+			0 = EXT:femanager/Resources/Private/Partials/
+			1 = {$plugin.femanager_checkout.view.partialRootPath}
+		}
+		layoutRootPaths {
+			0 = EXT:femanager_checkout/Resources/Private/Layouts/
+			1 = {$plugin.femanager_checkout.view.layoutRootPath}
+		}
+	}
+	persistence {
+		storagePid = {$plugin.femanager_checkout.persistence.storagePid}
+	}
+	features {
+	}
+
+	settings {
+
+
+	}
+}

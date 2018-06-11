@@ -1,0 +1,67 @@
+<script src="https://www.paypalobjects.com/api/checkout.js"></script>
+
+<h1>hallo welt</h1>
+
+<div id="paypal-button"></div>
+
+
+<script>
+	var returnUrl = '{f:uri.action(action:"pay", absolute:"1", arguments:"{user:FeUser}")-> f:format.raw()}';
+    paypal.Button.render({
+        env: 'sandbox', // Or 'sandbox', 'production"
+
+        client: {
+            sandbox:    'AZ-iy9aiX_D_4M2Bm5pUVZy7bOTjwbcerAsUEKtJucucGNq_r9o7aY4DSayxLwU9GNmAXGW1k5QMi8d0',
+            production: 'xxxxxxxxx'
+        },
+
+        style: {
+            color: 'gold',
+            size: 'small'
+        },
+
+		// payment() is called when the button is clicked
+        payment: function(data, actions) {
+            // Make a call to the REST API to set up the payment
+            return actions.payment.create({
+                payment: {
+                    transactions: [
+                        {
+                            amount: { total: '0.01', currency: 'USD' }
+                        }
+                    ],
+
+                    redirect_urls: {
+                        return_url: returnUrl,
+                        cancel_url: ''
+                    }
+                }
+            });
+        },
+
+
+        commit: true, // Show a 'Pay Now' button
+
+        // onAuthorize() is called when the buyer approves the payment
+        onAuthorize: function(data, actions) {
+
+            // Make a call to the REST API to execute the payment
+            return actions.payment.execute().then(function() {
+                    actions.redirect();
+                }
+            );
+        },
+
+        onCancel: function(data, actions) {
+            /*
+			 * Buyer cancelled the payment
+			 */
+        },
+
+        onError: function(err) {
+            /*
+			 * An error occurred during the transaction
+			 */
+        }
+    }, '#paypal-button');
+</script>
