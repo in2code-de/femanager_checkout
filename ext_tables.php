@@ -7,7 +7,7 @@ if (!defined('TYPO3_MODE')) {
  * Static TypoScripts
  */
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addStaticFile(
-    'femanager checkout',
+    'femanager_checkout',
     'Configuration/TypoScript/Main',
     'Main Settings'
 );
@@ -18,8 +18,6 @@ if (!defined('TYPO3_MODE')) {
      * FE Plugin
      */
     \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerPlugin('In2code.' . $extKey, 'Pi1', 'FE_Manager checkout');
-
-
 
     /**
      * Disable non needed fields in tt_content
