@@ -20,7 +20,20 @@ plugin.tx_femanagercheckout {
 	}
 
 	settings {
-
-
+		paypal {
+			env = sandbox
+			client {
+				sandbox =
+				production =
+				style {
+					color = gold
+					size = small
+				}
+				payment.transactions.amount {
+					total = 1
+					currency = EUR
+				}
+			}
+		}
 	}
 }
