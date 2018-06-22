@@ -9,10 +9,10 @@ $config = function ($extKey, &$TCA) {
         'In2code.' . $extKey,
         'Pi1',
         [
-            'Checkout' => 'checkout, message, pay, cancelPayment',
+            'Checkout' => 'checkout, message, pay, cancel',
         ],
         [
-            'Checkout' => 'checkout, message, pay, cancelPayment',
+            'Checkout' => 'checkout, message, pay, cancel',
         ]
     );
 };

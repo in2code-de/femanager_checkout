@@ -1,23 +1,27 @@
 <script src="https://www.paypalobjects.com/api/checkout.js"></script>
 
-<h1>hallo welt</h1>
-
 <div id="paypal-button"></div>
-
 
 <script>
 	var returnUrl = '{f:uri.action(action:"pay", absolute:"1", arguments:"{user:FeUser}")-> f:format.raw()}';
+	var cancel_url = '{f:uri.action(action:"pay", absolute:"1", arguments:"{user:FeUser}")-> f:format.raw()}';
+	var client_sandbox = '{settings.paypal.client.sandbox}';
+    var client_production = '{settings.paypal.client.production}';
+    var client_style_color = '{settings.paypal.client.style.color}';
+    var client_style_size = '{settings.paypal.client.style.size}';
+    var client_transactions_amount_total = '{settings.paypal.client.payment.transactions.amount.total}';
+    var client_transactions_amount_currency = '{settings.paypal.client.payment.transactions.amount.currency}';
     paypal.Button.render({
-        env: 'sandbox', // Or 'sandbox', 'production"
+        env: '{settings.paypal.env}', // Or 'sandbox', 'production"
 
         client: {
-            sandbox:    'AZ-iy9aiX_D_4M2Bm5pUVZy7bOTjwbcerAsUEKtJucucGNq_r9o7aY4DSayxLwU9GNmAXGW1k5QMi8d0',
-            production: 'xxxxxxxxx'
+            sandbox:    client_sandbox,
+            production: client_production
         },
 
         style: {
-            color: 'gold',
-            size: 'small'
+            color: client_style_color,
+            size: client_style_size
         },
 
 		// payment() is called when the button is clicked
@@ -27,13 +31,13 @@
                 payment: {
                     transactions: [
                         {
-                            amount: { total: '0.01', currency: 'USD' }
+                            amount: { total: client_transactions_amount_total , currency:client_transactions_amount_currency  }
                         }
                     ],
 
                     redirect_urls: {
                         return_url: returnUrl,
-                        cancel_url: ''
+                        cancel_url: cancel_url
                     }
                 }
             });
