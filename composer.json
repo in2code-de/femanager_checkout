@@ -10,11 +10,11 @@
     "sr_feuser_register",
     "fe_users"
   ],
-  "homepage": "https://github.com/in2code-de/femanager",
+  "homepage": "https://github.com/in2code-de/femanager_checkout",
   "authors": [
     {
-      "name": "Alex Kellner",
-      "email": "alexander.kellner@in2code.de"
+      "name": "Stefan Busemann",
+      "email": "stefan.busemann@in2code.de"
     }
   ],
   "type": "typo3-cms-extension",
