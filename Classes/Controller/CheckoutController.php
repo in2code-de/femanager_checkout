@@ -72,15 +72,14 @@ class CheckoutController extends ActionController
             $this->redirect('message');
         }
 
-        if ($this->verifyPayment($this->arguments) === false) {
+        if ($this->verifyPayment(GeneralUtility::_GET()) === false) {
             $this->addFlashMessage('Something went wrong with your payment', 'Error', AbstractMessage::ERROR);
             $this->redirect('message');
         }
-        // todo verify payment
-        $registeredGroup = $this->userGroupRepository->findByUid(1);
-        $exclusiveGroup = $this->userGroupRepository->findByUid(3);
-        $user->addUsergroup($exclusiveGroup);
-        $user->removeUsergroup($registeredGroup);
+        $basisGroup = $this->userGroupRepository->findByUid($this->settings['groups']['premium']);
+        $premiumGroup = $this->userGroupRepository->findByUid($this->settings['groups']['premium']);
+        $user->addUsergroup($premiumGroup);
+        $user->removeUsergroup($basisGroup);
         $this->userRepository->update($user);
     }
 
@@ -104,12 +103,12 @@ class CheckoutController extends ActionController
     }
 
     /**
-     * @param Arguments $user
+     * @param array $arguments
      * @return bool
      */
-    private function verifyPayment(Arguments $arguments)
+    private function verifyPayment($arguments)
     {
-        If (GeneralUtility::_GET('token') && GeneralUtility::_GET('paymentId') && GeneralUtility::_GET('PayerID')){
+        If ($arguments['token'] && $arguments['paymentId'] && $arguments['PayerID']){
             return true;
         }
         return false;

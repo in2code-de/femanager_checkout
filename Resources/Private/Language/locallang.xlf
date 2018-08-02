@@ -6,6 +6,9 @@
 			<trans-unit id="tx_femanager_domain_model_user">
 				<source>User</source>
 			</trans-unit>
+			<trans-unit id="tx_femanager_domain_model_user">
+				<source>User</source>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>
