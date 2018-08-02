@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace In2code\FemanagerCheckout\Controller;
 
-use In2code\Femanager\Domain\Model\User;
+    use TYPO3\CMS\Extbase\Domain\Model\FrontendUser;
+use TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository;
+use TYPO3\CMS\Extbase\Domain\Repository\FrontendUserGroupRepository;
 use TYPO3\CMS\Core\Messaging\AbstractMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
+use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 
 /**
  * Class NewController
@@ -15,27 +18,22 @@ use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 class CheckoutController extends ActionController
 {
     /**
-     * @var \In2code\Femanager\Domain\Repository\UserRepository
-     * @inject
+     * @var FrontendUserRepository
+     *
      */
     protected $userRepository;
 
     /**
-     * @var \In2code\Femanager\Domain\Repository\UserGroupRepository
-     * @inject
+     * @var FrontendUserGroupRepository
+     *
      */
     protected $userGroupRepository;
 
     /**
-     * @var \TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager
-     * @inject
+     * @var PersistenceManager
+     *
      */
     protected $persistenceManager;
-
-    /**
-     * @var \In2code\Femanager\Domain\Service\SendMailService
-     * @inject
-     */
 
     /**
      * Render checkout form
@@ -45,13 +43,19 @@ class CheckoutController extends ActionController
     public function checkoutAction()
     {
         $feUserUid = $GLOBALS['TSFE']->fe_user->user['uid'];
-        if (is_null($feUserUid)) {
+        if ($feUserUid === null) {
             $this->addFlashMessage('You have to be logged in', 'Login nessecary', AbstractMessage::ERROR);
             $this->redirect('message');
         }
         $feUser = $this->userRepository->findByUid($feUserUid);
-        $this->view->assign('FeUser', $feUser);
 
+        //check if current user is already premium user
+        if ($this->checkPremiumGroup($GLOBALS['TSFE']->fe_user->user['usergroup'],
+                $this->settings['groups']['premium']) === true) {
+            $this->addFlashMessage('You have already premium access', 'title,');
+            $this->redirect('message');
+        }
+        $this->view->assign('FeUser', $feUser);
     }
 
     /**
@@ -63,31 +67,57 @@ class CheckoutController extends ActionController
         $this->controllerContext = $this->buildControllerContext();
 
         // check settings
-        if (!$this->settings['groups']['basis'] OR !$this->settings['groups']['premium'] )
-        {
-            $this->addFlashMessage('TypoScript setting for user groups is missing', 'Configuration Error', AbstractMessage::ERROR);
+        if (!$this->settings['groups']['basis'] OR !$this->settings['groups']['premium']) {
+            $this->addFlashMessage('TypoScript setting for user groups is missing', 'Configuration Error',
+                AbstractMessage::ERROR);
             $this->redirect('message');
         }
-        if (!$this->settings['paypal']['client']['sandbox'] AND !$this->settings['paypal']['client']['production'] )
-        {
-            $this->addFlashMessage('TypoScript setting for paypal environment is missing', 'Configuration Error', AbstractMessage::ERROR);
+        if (!$this->settings['paypal']['client']['sandbox'] AND !$this->settings['paypal']['client']['production']) {
+            $this->addFlashMessage('TypoScript setting for paypal environment is missing', 'Configuration Error',
+                AbstractMessage::ERROR);
             $this->redirect('message');
         }
-        if (!$this->settings['paypal']['client']['payment']['transactions']['amount']['total'] || !$this->settings['paypal']['client']['payment']['transactions']['amount']['currency'] )
-        {
-            $this->addFlashMessage('TypoScript setting for paypal payment is missing', 'Configuration Error', AbstractMessage::ERROR);
+        if (!$this->settings['paypal']['client']['payment']['transactions']['amount']['total'] || !$this->settings['paypal']['client']['payment']['transactions']['amount']['currency']) {
+            $this->addFlashMessage('TypoScript setting for paypal payment is missing', 'Configuration Error',
+                AbstractMessage::ERROR);
             $this->redirect('message');
         }
     }
 
     /**
+     * @param PersistenceManager $persistenceManager
+     */
+    public function injectPersistenceManager(
+        PersistenceManager $persistenceManager
+    ) {
+        $this->persistenceManager = $persistenceManager;
+    }
+
+    /**
+     * @param FrontendUserGroupRepository $userGroupRepository
+     */
+    public function injectUserGroupRepository(
+        FrontendUserGroupRepository $userGroupRepository
+    ) {
+        $this->userGroupRepository = $userGroupRepository;
+    }
+
+    /**
+     * @param FrontendUserRepository $userRepository
+     */
+    public function injectUserRepository(FrontendUserRepository $userRepository)
+    {
+        $this->userRepository = $userRepository;
+    }
+
+    /**
      * perform the paypal payment
      *
-     * @param User $user
+     * @param FrontendUser $user
      *
      * @return void
      */
-    public function payAction(User $user)
+    public function payAction(FrontendUser $user)
     {
         $feUserUid = $GLOBALS['TSFE']->fe_user->user['uid'];
         if ($feUserUid <> $user->getUid()) {
@@ -101,24 +131,27 @@ class CheckoutController extends ActionController
         }
         $basisGroup = $this->userGroupRepository->findByUid($this->settings['groups']['basis']);
         $premiumGroup = $this->userGroupRepository->findByUid($this->settings['groups']['premium']);
-        $user->removeUsergroup($basisGroup);
         $user->addUsergroup($premiumGroup);
+        $user->removeUsergroup($basisGroup);
+        $this->userRepository->update($user);
     }
 
     /**
      * cancel the paypal payment
      *
-     * @param User $user
-     *
      * @return void
+     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\StopActionException
+     * @throws \TYPO3\CMS\Extbase\Mvc\Exception\UnsupportedRequestTypeException
      */
-    public function cancelAction(User $user)
+    public function cancelAction()
     {
         $this->addFlashMessage('Your payment was cancelled', 'Cancellation', AbstractMessage::INFO);
         $this->redirect('message');
     }
 
-
+    /**
+     *
+     */
     public function messageAction()
     {
 
@@ -130,30 +163,22 @@ class CheckoutController extends ActionController
      */
     private function verifyPayment($arguments)
     {
-        If ($arguments['token'] && $arguments['paymentId'] && $arguments['PayerID']) {
+        return $arguments['token'] && $arguments['paymentId'] && $arguments['PayerID'];
+    }
+
+    /**
+     * @param array $usergroups
+     * @param int $premium
+     * @return bool
+     */
+    private function checkPremiumGroup($usergroups, $premium)
+    {
+        $usergroupsArray = explode(',', $usergroups);
+        if (in_array($premium, $usergroupsArray, true)) {
             return true;
         }
 
         return false;
-    }
-    /**
-     * Initialize the controller context
-     *
-     * @return \TYPO3\CMS\Extbase\Mvc\Controller\ControllerContext ControllerContext to be passed to the view
-     * @api
-     */
-    protected function buildControllerContext()
-    {
-        /** @var $controllerContext \TYPO3\CMS\Extbase\Mvc\Controller\ControllerContext */
-        $controllerContext = $this->objectManager->get(\TYPO3\CMS\Extbase\Mvc\Controller\ControllerContext::class);
-        $controllerContext->setRequest($this->request);
-        $controllerContext->setResponse($this->response);
-        if ($this->arguments !== null) {
-            $controllerContext->setArguments($this->arguments);
-        }
-        $controllerContext->setUriBuilder($this->uriBuilder);
-
-        return $controllerContext;
     }
 }
 
