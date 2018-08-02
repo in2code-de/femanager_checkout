@@ -1,0 +1,5 @@
+.. |Intro|      image:: ../Images/Checkout.png
+.. :align: left
+.. :border: 0
+.. :name: create1
+.. :vspace: 20

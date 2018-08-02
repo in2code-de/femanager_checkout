@@ -15,7 +15,7 @@ Femanager Checkout is a TYPO3 extension for a modern checkout process for fronte
    		femanager_checkout
 
    	:Version:
-   		4.1
+   		1.0
 
    	:Language:
    		en
