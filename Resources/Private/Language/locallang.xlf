@@ -9,6 +9,15 @@
 			<trans-unit id="tx_femanager_domain_model_user">
 				<source>User</source>
 			</trans-unit>
+			<trans-unit id="checkout_header">
+				<source>Upgrade your account</source>
+			</trans-unit>
+			<trans-unit id="checkout_pricing">
+				<source>The premium services will cost you once:</source>
+			</trans-unit>
+			<trans-unit id="checkout_description">
+				<source>Please proceed with the payment, in order to upgrade your account.</source>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>

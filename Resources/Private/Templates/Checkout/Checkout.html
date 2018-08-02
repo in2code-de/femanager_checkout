@@ -1,3 +1,13 @@
+
+<h2><f:translate key="checkout_header" /></h2>
+
+<p><f:translate key="checkout_description" /></p>
+
+<p>
+    <f:translate key="checkout_pricing" /> &nbsp;<f:format.currency currencySign="€" decimalSeparator="," thousandsSeparator="." prependCurrency="false">{settings.paypal.client.payment.transactions.amount.total}</f:format.currency>
+
+</p>
+
 <script src="https://www.paypalobjects.com/api/checkout.js"></script>
 
 <div id="paypal-button"></div>
